@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Plant Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f7f0;
+      color: #1a2e1a;
+      padding: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2d6a2d;
+    }
+
+    /* ── Plant cards ── */
+    .plant-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .plant-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .plant-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .badge {
+      font-size: .8rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge-ok   { background: #d4edda; color: #155724; }
+    .badge-soon { background: #fff3cd; color: #856404; }
+    .badge-late { background: #f8d7da; color: #721c24; }
+
+    .plant-meta {
+      font-size: .85rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .plant-notes {
+      font-size: .9rem;
+      color: #444;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    /* ── Inline forms inside card ── */
+    .card-actions {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .inline-form {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .inline-form input[type="date"],
+    .inline-form input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: .95rem;
+      background: #f9f9f9;
+    }
+
+    /* ── Buttons ── */
+    button, .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 44px;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .btn-water  { background: #3a9e4a; color: #fff; }
+    .btn-note   { background: #f0a500; color: #fff; }
+    .btn-remove { background: #fff; color: #c0392b; border: 2px solid #c0392b; }
+    .btn-add    { background: #2d6a2d; color: #fff; width: 100%; font-size: 1rem; margin-top: 4px; }
+
+    button:active { opacity: .75; }
+
+    /* ── Details/summary toggle ── */
+    details > summary {
+      list-style: none;
+      cursor: pointer;
+      font-size: .85rem;
+      color: #2d6a2d;
+      font-weight: 600;
+      padding: 4px 0;
+    }
+    details > summary::-webkit-details-marker { display: none; }
+    details[open] > summary::before { content: "▾ "; }
+    details:not([open]) > summary::before { content: "▸ "; }
+
+    /* ── Add plant form ── */
+    .add-section {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .add-section h2 {
+      font-size: 1.1rem;
+      color: #2d6a2d;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 1rem;
+      background: #f9f9f9;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #777;
+      padding: 30px 0;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🌿 Plant Tracker</h1>
+
+{% if plants %}
+  {% for p in plants %}
+  <div class="plant-card">
+    <div class="plant-header">
+      <span class="plant-name">{{ p.name }}</span>
+      {% if p.days_ago is none %}
+        <span class="badge badge-soon">?</span>
+      {% elif p.days_ago <= 2 %}
+        <span class="badge badge-ok">Watered {{ p.days_ago }}d ago</span>
+      {% elif p.days_ago <= 7 %}
+        <span class="badge badge-soon">{{ p.days_ago }}d ago</span>
+      {% else %}
+        <span class="badge badge-late">{{ p.days_ago }}d ago ⚠️</span>
+      {% endif %}
+    </div>
+
+    <div class="plant-meta">Last watered: {{ p.last_watered }}</div>
+
+    {% if p.notes %}
+    <div class="plant-notes">{{ p.notes }}</div>
+    {% endif %}
+
+    <div class="card-actions">
+      <!-- Water today -->
+      <form action="/water/{{ p.key }}" method="post" class="inline-form">
+        <input type="date" name="watered" value="{{ today }}" />
+        <button type="submit" class="btn-water">Water</button>
+      </form>
+
+      <!-- Edit notes (collapsed) -->
+      <details>
+        <summary>Edit notes / Remove</summary>
+        <div style="margin-top:8px; display:flex; flex-direction:column; gap:8px;">
+          <form action="/note/{{ p.key }}" method="post" class="inline-form">
+            <input type="text" name="notes" value="{{ p.notes }}" placeholder="Notes…" />
+            <button type="submit" class="btn-note">Save</button>
+          </form>
+          <form action="/remove/{{ p.key }}" method="post"
+                onsubmit="return confirm('Remove {{ p.name }}?')">
+            <button type="submit" class="btn-remove">Remove plant</button>
+          </form>
+        </div>
+      </details>
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="empty-state">No plants yet — add your first one below!</div>
+{% endif %}
+
+<div class="add-section">
+  <h2>Add a plant</h2>
+  <form action="/add" method="post">
+    <div class="field">
+      <label for="name">Plant name *</label>
+      <input type="text" id="name" name="name" placeholder="e.g. Monstera" required autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="watered">Last watered</label>
+      <input type="date" id="watered" name="watered" value="{{ today }}" />
+    </div>
+    <div class="field">
+      <label for="notes">Notes</label>
+      <input type="text" id="notes" name="notes" placeholder="e.g. Lives on the windowsill" />
+    </div>
+    <button type="submit" class="btn btn-add">Add plant</button>
+  </form>
+</div>
+
+</body>
+</html>
